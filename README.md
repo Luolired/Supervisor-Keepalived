@@ -78,78 +78,146 @@ Supervisor应用程序管理与Keepalived高可用切换解决方案
          /usr/local/007ka/BankInterface/BOBB2CServer/sup_run.sh start|stop|restart|update|help
 
 
-        4.4 Sup报备中心同步  -----待续
-
-        4.5.keepalived与Sup报备中心衔接调度         -----待续
-
 五、模拟测试
+        5.4 Sup报备中心同步  -----完成测试
 
-      5.1 apps运行supervisorctl    
+                 现在 22-121 和22-122 sup配置文件是相互同步的。
 
-        apps@22app121p:/etc/supervisor$ /etc/init.d/supervisor --help 标准化启动sup服务
+                 121        conf.d目录下/sup*.conf =======同步=====》 122 conf.d / G_Move_conf.d/    实时同步   
 
-        Usage: /etc/init.d/supervisord {start|stop|restart|force-reload|status|force-stop}
+                apps     56198  0.0  0.0  17860  1652 ?        S    Jul07   0:00 /bin/bash /etc/keepalived/scripts/121_backup_122/rsync_sup_conf.sh                   
+
+                  涉及脚本：
+
+                  /etc/keepalived/scripts/121_backup_122/ keepalived_run.sh                   
+
+                  /etc/keepalived/scripts/121_backup_122/keepalived_supervisord.ini
 
 
-     5.2 supervisorctl 封装
 
-        New_supervisor  新的sup入口。拒绝shutdown命令，stop应用时，把conf相对的应用从conf.d目录移到/tmp/supervisor_conf.bak
+        5.5.keepalived与Sup报备中心衔接调度       
+
+     由：
 
         
 
-      5.3 run.sh 模板标准化的改写
+        notify_master "/etc/keepalived/scripts/121_backup_122/pid_run.sh"
 
-        [Info] eg:/usr/local/007ka/BankInterface/BOBB2CServer/sup_run.sh start|stop|restart|update|help
+        notify_backup "/etc/keepalived/scripts/121_backup_122/pid_backup.sh"
 
-        完成对应用程序额的单独管理，新增介入到sup报备中心，从报备中心创建conf 启动 & stop 停止服务，移除conf & 重启服务 & 更新在Sup里面的缓存
+        notify_stop "/etc/keepalived/scripts/121_backup_122/pid_stop.sh
 
-       .
+      变化成：                
 
-       5.4 守护进程样例
+        notify_master "/etc/keepalived/scripts/121_backup_122/sup_run_all.sh"
 
-        #supervisorctl maintail     看守护日志
+        notify_backup "/etc/keepalived/scripts/121_backup_122/sup_backup_all.sh"
 
-             
+        notify_stop "/etc/keepalived/scripts/121_backup_122/sup_stop_all.sh"
 
-       一般用户下的测试：
+            
 
-        lizx01@22app121p:~$ supervisorctl 
+          原理一致：修改了 程序逻辑，无须判断每个程序的pid文件，遍历每个启动或者停止。使用supervisor语法：  
 
-        New_supervisor> help
+             supervisorctl -c /etc/supervisor/supervisord.conf start all
 
-    default commands (type help <topic>):
+             supervisorctl -c /etc/supervisor/supervisord.conf stop all (已测试成功,封装后的sup,会将conf.d目录下conf移走)
 
-    =====================================
+    
 
-    add    clear  fg        open  quit    remove  restart   start   stop  update 
+          5.5 keepalived 测试
 
-    avail  exit   maintail  pid   reload  reread  shutdown  status  tail  version
+            实验成功
+
+            日志如下：
+
+                     cat /etc/keepalived/state.txt 
+
+                       2016年07月11日 星期一 10时23分02秒 backup
+
+                    
+
+                    apps@22app122p:/var/applog/121_backup_122$ cat pid_backup.2016-07-11.log 
+
+                    [2016-07-11 10:23:02] ====================================================================
+
+                    [2016-07-11 10:23:02] 10.22.10.122 节点降级为backup调用的脚本 一键关闭本机程序 Start
+
+                    [2016-07-11 10:23:02] [SUCCESS] /etc/keepalived/scripts/121_backup_122/rsync_sup_conf.lock PID实时同步加锁成功,开启不同步!!!
+
+                    [2016-07-11 10:23:02] supervisorctl -c /etc/supervisor/supervisord.conf stop all
+
+                    [2016-07-11 10:23:02] Sup Stop all 执行成功
+
+                    [2016-07-11 10:23:02] 10.22.10.122 节点降级为backup调用的脚本 一键关闭本机程序 End
+
+                    [2016-07-11 10:23:02] ====================================================================
+
+ 
+
+                apps@22app122p:/var/applog/121_backup_122$ supervisorctl status
+
+                BOBB2CServer                     STOPPED    Jul 11 10:04 AM
+
+                BondSendStatisticsService        STOPPED    Jul 11 10:04 AM
+
+                ManageBackStageService           STOPPED    Jul 11 10:04 AM
+
+                RechareSuccForSms                STOPPED    Jul 11 10:04 AM
+
+                SmsSendService                   STOPPED    Jul 11 10:04 AM
 
 
-    New_supervisor> pid
 
-    58517
 
-    New_supervisor> avail
+                    root@22app121p:/etc/keepalived/scripts/121_backup_122# cat /etc/keepalived/state.txt                
 
-    BOBB2CServer                     in use    manual    999:999
+                    2016年07月11日 星期一 10时12分21秒 backup
 
-    New_supervisor> status
+                    2016年07月11日 星期一 10时23分05秒 master
 
-    BOBB2CServer                     RUNNING    pid 61138, uptime 0:11:23
+                    
 
-    New_supervisor> exit
+                root@22app121p:/var/applog/121_backup_122# cat pid_run.2016-07-11.log 
 
-    GoodBye Soc
+                [2016-07-11 10:23:05] ========================================================================
 
-        （Tips: 执行管理进程就必须在Sup平台里面进行管理应用程序，kill将再次守护执行启动）
+                [2016-07-11 10:23:05] 10.22.10.121 节点将提升为Master 一键启动程序 Start
 
-            SO:管理进程有两种方法：
+                [2016-07-11 10:23:05] [SUCCESS] /etc/keepalived/scripts/121_backup_122/rsync_sup_conf.lock 同步锁不存在,同步功能可使用
 
-                A.客户端入口模式：supervisorctl
+                [2016-07-11 10:23:05] supervisorctl -c /etc/supervisord.conf start all
 
-                B.应用run.sh模式: run.sh stop/start/restart
+                [2016-07-11 10:23:11] Sup Start all 执行成功
 
-        5.4 Sup报备中心同步  -----待续
+                [2016-07-11 10:23:11] 10.22.10.121 节点将提升为Master 一键启动程序 End
 
-        5.5.keepalived与Sup报备中心衔接调度         -----待续
+                [2016-07-11 10:23:11] 清除10.22.10.121主机程序残留的fullappname 开始进入
+
+                [2016-07-11 10:23:11] clearfullappname.sh不存在!
+
+                [2016-07-11 10:23:11] 清除10.22.10.121主机程序残留的fullappname 结束完毕
+
+                [2016-07-11 10:23:11] ========================================================================
+
+                    
+
+            root@22app121p:/var/applog/121_backup_122# supervisorctl status
+
+            BOBB2CServer                     RUNNING    pid 1734, uptime 0:23:29
+
+            BondSendStatisticsService        RUNNING    pid 1691, uptime 0:23:29
+
+            ManageBackStageService           RUNNING    pid 1720, uptime 0:23:29
+
+            RechareSuccForSms                RUNNING    pid 1743, uptime 0:23:29
+
+            SmsSendService                   RUNNING    pid 1692, uptime 0:23:29
+
+     
+
+        【总结】：
+
+                        1. 小伙伴在上线应用程序到 121和122时，只需要将 sup_run.sh 上线到应用程序即可将程序加入到sup，就是这么Easy ，program.ini 仍然还是保留。
+
+                         2.新运维技能-Supervisor 管理应用程序常见命令用法eg:
