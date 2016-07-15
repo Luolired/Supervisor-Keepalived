@@ -4,6 +4,7 @@ sup解读 (安装过程中变启动：ps aux |grep supervisor)
 sup封装
 pip install supervisor
 apt-get -y install supervisor
+```
 # chown -R apps:apps /etc/supervisor
 #/etc/init.d/supervisor stop
 # vi /etc/init.d/supervisor
@@ -31,3 +32,4 @@ supervisord.conf
 [include]         重大bug
 files=/etc/supervisor/conf.d/*.conf /etc/supervisor/G_Move_conf.d/*.conf
 用空格分开多个目录。否则下图第二个files将覆盖第一个！！！
+```
