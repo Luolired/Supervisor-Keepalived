@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# ***************************************************************************
+# * 
+# * @file:supervisorctl.sh 
+# * @author:Luolired@163.com 
+# * @date:2016-06-15 01:26 
+# * @version 1.1
+# * @description: supervisorctl command stop/remove 移除对应程序配置,以达到supervisor目录下,高可用同步Shell script 
+# * @Copyright (c) 007ka all right reserved 
+# * @UpdateLog: 1.更新read交互模式下，删除BackSpace ^H符合问题
+# *             2.解决bug read回车不输入情况下，切回supervisorctl bug
+# *             3.改善逻辑 循环while交互
+#**************************************************************************/ 
+
+stty erase ^h
+stty erase ^?
+G_Program_Name=/usr/bin/supzcli
+G_Sup_Conf_Path=/etc/supervisor/conf.d
+G_Conf_Bak_Path=/tmp/supervisor_conf.bak
+G_Program_User=apps
+sudo -u $G_Program_User mkdir -p $G_Conf_Bak_Path
+
+#进入Bash_shell终端模式参数模式
+case $1 in
+    stop)
+        #开始挨个移除后面文件
+        for line in $(echo "$*"| awk -F '[ :]+' '{for(i=2;i<=NF;++i){print $i}}')
+        do
+            sudo -u $G_Program_User mv ${G_Sup_Conf_Path}/${line}.conf $G_Conf_Bak_Path/ &>/dev/null
+            $G_Program_Name remove ${line}
+            $G_Program_Name stop ${line}
+        done
+    ;;
+    shutdown)
+	echo "shutdown commands is not allowed,be refused!"
+    ;;
+    *)
+        if [ "$#" -lt 1 ] ;then
+            #进入Cli交互模式
+            while true
+            do
+                read -p "New_supervisor> " input_args_all
+                if [[ "$input_args_all" == "" ]];then
+                    continue
+                fi
+                input_args_First=$(echo "$input_args_all" | awk -F '[ :]+' '{print $1}')
+                case $input_args_First in
+                    stop)
+                        #开始挨个移除后面文件
+                        for line in $(echo "$input_args_all"| awk -F '[ :]+' '{for(i=2;i<=NF;++i){print $i}}')
+                        do
+                            sudo -u $G_Program_User mv ${G_Sup_Conf_Path}/${line}.conf $G_Conf_Bak_Path/ &>/dev/null
+                            $G_Program_Name remove ${line}
+                            $G_Program_Name stop ${line}
+                        done
+                    ;;
+		    shutdown)
+			echo "shutdown commands is not allowed,be refused!"
+		    ;;
+                    exit)
+                        echo "GoodBye Soc"
+                        exit 0
+                    ;;
+                    *)	
+                        $G_Program_Name ${input_args_all}
+                    ;;
+                esac
+            done
+        fi
+        $G_Program_Name $*
+    ;;
+esac
