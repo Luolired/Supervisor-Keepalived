@@ -4,7 +4,7 @@
 
 ## 问题概要：
         1.应用程序异常退出如何自动守护？应用程序日志输出如何自动管理？应用程序如何分组管理？分组开启？
-        2.应用程序如何一份应用，开启多分？
+        2.应用程序如何一份应用，开启多份？
         以上问题解决方案：Supervisor(python)
         
         
@@ -26,7 +26,6 @@
         好处有两个：
        1.supervisorctl command stop/remove 移除对应程序配置,以达到supervisor目录下,高可用同步Shell script
        2.过滤禁止执行一些危险的命令例如 stop all/shutdown
-
 
 一、标题：Sup应用管理可行性方案探讨-lizx-20160620
 
