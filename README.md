@@ -1,23 +1,38 @@
 # Supervisor-Keepalived
-Supervisor应用程序管理与Keepalived高可用切换解决方案
 
+Supervisor管理服务与Keeppalived高可用实施(已运营到生产)
+
+问题概要：
+        1.应用程序异常退出如何自动守护？应用程序日志输出如何自动管理？应用程序如何分组管理？分组开启？
+        2.应用程序如何一份应用，开启多分？
+        以上问题解决方案：Supervisor(python)
+        
+        1.单点主机在故障时（服务器宕机）高可用keepalived，如何接管故障主机的应用服务（比如故障机开了什么服务？运行了多少进程？）
+        
+        综上: Supervisor+Keepalived+Rsync+inotify-tools 
+        基础条件：每个应用程序启动运行都需要标准化（何为标准化？1./sup_run.sh start/restart/stop/update 2.每个应用程序自带程序信息卡prgram.ini）
+        
+        原理解读：我们通过实时同步Supervisor启动配置文件，在主机故障时，keepalived启动接管响应notif_master事件，启动主机应用程序。
+        因为superviosr应用程序启动停止只是从内存中remove,哪我们怎么把主机开了哪些服务告诉备机呢？
+        两种解决方案：
+        1.封装改写supervisorctl 只要程序停止了，启动配置文件默认从conf.d移除，这样就能保证程序不多不少在备机接管开启。
+        2.实时将supervisorctl status 状态同步给备机，备机在实时的加载到内存里。（此方法比较复杂：先要导出主机stauts状态，比较难实现备机的stauts状态与主机保持一致）
+        因此，我们选择了 封装改写supervisorctl。
+        好处有两个：
+       1.supervisorctl command stop/remove 移除对应程序配置,以达到supervisor目录下,高可用同步Shell script
+        2.过滤禁止执行一些危险的命令例如 stop all/shutdown
 
 一、标题：Sup应用管理可行性方案探讨-lizx-20160620
 
-
 二、简介：
-
-        Supervisor 是由python语言编写、基于linux操作系统的一款服务器管理工具，用以监控服务器的运行，发现问题能立即自动预警及自动重启等功能。
-
-        1.程序的多进程启动，可以配置同时启动的进程数，而不需要一个个启动
-
+    Supervisor 是由python语言编写、基于linux操作系统的一款服务器管理工具，用以监控服务器的运行，发现问题能立即自动预警及自动重启等功能。
+    1.程序的多进程启动，可以配置同时启动的进程数，而不需要一个个启动
     2.程序的退出码，可以根据程序的退出码来判断是否需要自动重启
     3.程序所产生日志的处理
     4.进程初始化的环境，包括目录，用户，umask，关闭进程所需要的信号等等
     5.手动管理进程(开始，启动，重启，查看进程状态)的web界面，和xmlrpc接口
-
     【关键字】：进程管理工具、自动守护重启、二次开发
-
+    
 三、需求：
 
         【现状】：每台主机上配备一个包含本机运行的pid目录（我们称为PID报备中心),每一个运行的程序因为有了标准化的启动脚本，都会在PID报备中心里，增删改pid文件。
