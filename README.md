@@ -16,7 +16,8 @@
 ### 加我微信一起讨论：
 ![img](https://github.com/Luolired/Supervisor-Keepalived/blob/master/supervisor/QQ截图20170217115759.jpg)
       
-      建立之初：Supervisor(python)
+
+#### 建立之初：Supervisor(python)
         
         1.任何一个节点都是不可靠的，主机在故障时（服务器宕机）高可用keepalived，如何接管故障主机的应用服务（比如故障机开了什么服务？运行了多少进程？)
          ===>主机宕机，不清楚跑了什么业务，涉及哪些业务面？都是两眼一抹黑？ 运维应该对业务面、拓扑、程序监控、运行服务都应该了如指掌，即使不清楚，你要能查到，有记录可查cmdb。
