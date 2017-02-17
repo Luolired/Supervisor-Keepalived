@@ -111,10 +111,8 @@
 
 
 ### 5.6 keepalived切换
-		当A服务器宕机故障后，B服务器 keepalvied 心跳健康检测发现需要接管A服务器业务，B主机有backup角色升级到Master角色，主备事件角色替换，notify_backup和
-  notify_master事件被触发。
+		当A服务器宕机故障后，B服务器 keepalvied 心跳健康检测发现需要接管A服务器业务，B主机有backup角色升级到Master角色，主备事件角色替换，notify_backup和notify_master事件被触发。
 
-事件里面我们触发时脚本。
     节点提升为master调用的脚本 notify_master "/etc/keepalived/scripts/150_backup_111/sup_run_all.sh"
     节点降级为backup调用的脚本 notify_backup "/etc/keepalived/scripts/150_backup_111/sup_backup_all.sh"
     节点降级为stop调用的脚本 notify_stop "/etc/keepalived/scripts/150_backup_111/sup_stop_all.sh"
@@ -122,6 +120,7 @@
 > sup_run_all.sh 包行了关键操作：/etc/init.d/supervisor start 与supervisorctl update && supervisorctl -c /etc/supervisord.conf start all
 
  ### 5.7 加lock锁机制管控
+ 
  		sup_run_all.sh与sup_backup_all.sh和sup_stop_all.sh 脚本中都加入keepalived_switch.lock
 		Keepalived主备切换功能开启锁文件,存在将不进行切换,不存在可切换,即加锁不同步,同步锁文件,存在不进行同步,不存在则进行同步,即加锁不同步这样我们就可以想让keepalved切换superviosr程序就切换，不需要则加个锁进去，就不会影响现有业务。
 
