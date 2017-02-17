@@ -1,6 +1,7 @@
 # Supervisor-Keepalived
 
 ## Supervisor管理服务与Keeppalived高可用实施(已运营到生产)
+![img](https://github.com/Luolired/Supervisor-Keepalived/blob/master/supervisor/QQ截图20170217112636.jpg)
 
 ## 问题概要：
         1.应用程序异常退出如何自动守护？应用程序日志输出如何自动管理？应用程序如何分组管理？分组开启？
