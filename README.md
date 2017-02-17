@@ -1,7 +1,6 @@
-#Supervisor-Keepalived 解决了用户的停机困扰互为主备高可用 
+#Supervisor-Keepalived 【解决了用户的停机困扰互为主备高可用】 
 
-##免费开源，适合互联网运维公司,比起昂贵的F5、vSphere和vCenter、英方容灾高可用
-
+##免费开源，适合互联网运维公司,比起昂贵的F5、vSphere和vCenter、英方容灾高可用、分部署存储客户端权限过高等
 
 ###Supervisor管理服务与Keeppalived高可用实施(已运营到生产)
 ![img](https://github.com/Luolired/Supervisor-Keepalived/blob/master/supervisor/QQ截图20170217112636.jpg)
