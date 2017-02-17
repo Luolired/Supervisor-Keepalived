@@ -13,16 +13,18 @@
 ####2.A主机应用程序服务器非常多如何管理启动，而且程序启动有优先顺序？如何自动？人工一个一个启动？ ====>一个配置自动实现，而且还提供web
 ####3.A主机应用程序服务因为系统过保随时宕机，应用程序服务又不能中断，如何在备机B接管 A的程序业务？ ===>Rsync 同步非结构化数据+keepalived健康检测
 ####4.A主机为主，B主机为备。A主机和B主机现阶段都跑有业务，如何新加入主备切换vip、同步等，不影响现有业务？===>加入lock 锁机制,人工干预维护
+### 加我微信一起讨论：
+![img](https://github.com/Luolired/Supervisor-Keepalived/blob/master/supervisor/QQ截图20170217115759.jpg)
       
-      以上问题解决方案：Supervisor(python)
+      建立之初：Supervisor(python)
         
-        
-        1.单点主机在故障时（服务器宕机）高可用keepalived，如何接管故障主机的应用服务（比如故障机开了什么服务？运行了多少进程？）
-        
-        
+        1.任何一个节点都是不可靠的，主机在故障时（服务器宕机）高可用keepalived，如何接管故障主机的应用服务（比如故障机开了什么服务？运行了多少进程？)
+         ===>主机宕机，不清楚跑了什么业务，涉及哪些业务面？都是两眼一抹黑？ 运维应该对业务面、拓扑、程序监控、运行服务都应该了如指掌，即使不清楚，你要能查到，有记录可查cmdb。
+         
         综上: Supervisor+Keepalived+Rsync+inotify-tools 
-        基础条件：每个应用程序启动运行都需要标准化
         
+        基础条件：每个应用程序启动运行都需要标准化（日志规范+命名规范+运行规范（start\stop\restart））
+        
         （何为标准化？1./sup_run.sh start/restart/stop/update 2.每个应用程序自带程序信息卡prgram.ini）
         
         原理解读：我们通过实时同步Supervisor启动配置文件，在主机故障时，keepalived启动接管响应notif_master事件，启动主机应用程序。
