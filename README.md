@@ -121,6 +121,8 @@
     
 > sup_run_all.sh 包行了关键操作：/etc/init.d/supervisor start 与supervisorctl update && supervisorctl -c /etc/supervisord.conf start all
 
- ### 5.7 加lock锁机制
+ ### 5.7 加lock锁机制管控
  		sup_run_all.sh与sup_backup_all.sh和sup_stop_all.sh 脚本中都加入keepalived_switch.lock
 		Keepalived主备切换功能开启锁文件,存在将不进行切换,不存在可切换,即加锁不同步,同步锁文件,存在不进行同步,不存在则进行同步,即加锁不同步这样我们就可以想让keepalved切换superviosr程序就切换，不需要则加个锁进去，就不会影响现有业务。
+
+> 待续.... lizx 20170217 
